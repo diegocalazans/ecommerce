@@ -2,9 +2,12 @@ package br.com.estagio.ecommerce.core.service;
 
 import java.util.List;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import br.com.estagio.ecommerce.core.entity.PessoaEntity;
+import br.com.estagio.ecommerce.core.exception.EcommerceException;
 import br.com.estagio.ecommerce.core.repository.PessoaRepository;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -17,7 +20,15 @@ public class PessoaService {
 		this.repository = repository;
 	}
 	
+	private boolean existe(PessoaEntity pessoa) {
+		Integer id = ObjectUtils.isEmpty(pessoa.getId()) ? 0 : pessoa.getId();
+		return repository.countByCpfAndIdNot(pessoa.getCpf(), id) > 0;
+	}
+	
 	public void salvar(PessoaEntity pessoa) {
+		if (existe(pessoa)) {
+			throw new EcommerceException("Já existe pessoa cadastrada com este cpf");
+		}	
 		repository.save(pessoa);
 	}
 	
